@@ -4,11 +4,11 @@
 
 #define BASE_FOLDER "ntkillstreaksounds"
 
+Handle SoundCookie;
+
 int g_iKillStreak[32+1];
 
 static bool wants_sound[32+1];
-
-Handle SoundCookie;
 
 static char g_Sounds[][] = {
 	"godlike.mp3",

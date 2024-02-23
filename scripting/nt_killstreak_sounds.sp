@@ -23,7 +23,7 @@ public Plugin myinfo = {
 	description = "NT killstreak sounds",
 	author = "bauxite",
 	version = "0.1.3",
-	url = "",
+	url = "https://github.com/bauxiteDYS/SM-NT-Killstreak-Sounds",
 };
 
 public void OnPluginStart()
@@ -47,7 +47,7 @@ public void OnMapStart()
 			
 		AddFileToDownloadsTable(DLBuff);
 		PrecacheSound(CacheBuff);
-    }
+	}
 }
 
 public void SoundTextMenu(int client, CookieMenuAction action, any info, char[] buffer, int maxlen)

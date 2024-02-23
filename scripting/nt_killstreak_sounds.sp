@@ -135,7 +135,6 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 	int victim = GetClientOfUserId(GetEventInt(event, "userid"));
 	int client = GetClientOfUserId(GetEventInt(event, "attacker"));
 	
-	
 	if(client != victim && GetClientTeam(victim) != GetClientTeam(client))
 	{ 
 		int streak = ++g_iKillStreak[client];

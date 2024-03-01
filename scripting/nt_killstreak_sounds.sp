@@ -135,26 +135,25 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 	int victim = GetClientOfUserId(GetEventInt(event, "userid"));
 	int client = GetClientOfUserId(GetEventInt(event, "attacker"));
 
-	if(client == 0 || victim == 0)
+	if(client == 0 && victim == 0)
 	{
-		return Plugin_Stop;
-	}
-
-	if(client != victim && GetClientTeam(victim) != GetClientTeam(client))
-	{ 
-		int streak = ++g_iKillStreak[client];
+	
+		if(client != victim && GetClientTeam(victim) != GetClientTeam(client))
+		{ 
+			int streak = ++g_iKillStreak[client];
 		
-		if(streak == 5)
-		{
-			char RandomSound[64+1];
-		
-			Format(RandomSound, 64, "%s/%s", BASE_FOLDER, g_Sounds[GetRandomInt(0, sizeof(g_Sounds)-1)]);
-			
-			for(int i = 1; i <= MaxClients; i++)
+			if(streak == 5)
 			{
-				if(IsClientInGame(i) && wants_sound[i])
+				char RandomSound[64+1];
+		
+				Format(RandomSound, 64, "%s/%s", BASE_FOLDER, g_Sounds[GetRandomInt(0, sizeof(g_Sounds)-1)]);
+			
+				for(int i = 1; i <= MaxClients; i++)
 				{
-					EmitSoundToClient(i, RandomSound);
+					if(IsClientInGame(i) && wants_sound[i])
+					{
+						EmitSoundToClient(i, RandomSound);
+					}
 				}
 			}
 		}

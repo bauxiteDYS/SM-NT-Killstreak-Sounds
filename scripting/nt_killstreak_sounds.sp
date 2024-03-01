@@ -135,7 +135,7 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 	int victim = GetClientOfUserId(GetEventInt(event, "userid"));
 	int client = GetClientOfUserId(GetEventInt(event, "attacker"));
 
-	if(client == 0 && victim == 0)
+	if(client != 0 && victim != 0)
 	{
 		if(client != victim && GetClientTeam(victim) != GetClientTeam(client))
 		{ 

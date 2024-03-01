@@ -22,7 +22,7 @@ public Plugin myinfo = {
 	name = "NT killstreak sounds",
 	description = "NT killstreak sounds",
 	author = "bauxite",
-	version = "0.1.3",
+	version = "0.1.5",
 	url = "https://github.com/bauxiteDYS/SM-NT-Killstreak-Sounds",
 };
 
@@ -134,7 +134,12 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 {
 	int victim = GetClientOfUserId(GetEventInt(event, "userid"));
 	int client = GetClientOfUserId(GetEventInt(event, "attacker"));
-	
+
+	if(client == 0 || victim == 0)
+	{
+		return Plugin_Stop;
+	}
+
 	if(client != victim && GetClientTeam(victim) != GetClientTeam(client))
 	{ 
 		int streak = ++g_iKillStreak[client];

@@ -5,16 +5,21 @@
 #define BASE_FOLDER "ntkillstreaksounds"
 
 Handle SoundCookie;
+Handle StreakTimer;
 
 int g_iKillStreak[32+1];
 
-//float LastPlayed;
+bool StreakPlayed[32+1][3];
+bool SoundCooldown;
 
-static bool wants_sound[32+1];
+char RandomSound[64+1];
+bool wants_sound[32+1];
 
 static char g_SoundsSix[][] = {
 	"godlike.mp3",
+	"godlike_f.mp3",
 	"holyshit.mp3",
+	"holyshit_f.mp3",
 	"ludicrouskill.mp3",
 	"monsterkill.mp3",
 	"rampage.mp3",
@@ -26,6 +31,7 @@ static char g_SoundsFor[][] = {
 	"multikill_f.mp3",
 	"multikill.mp3",
 	"ultrakill.mp3",
+	"ultrakill_f.mp3",
 };
 
 static char g_SoundsAte[][] = {
@@ -34,10 +40,10 @@ static char g_SoundsAte[][] = {
 };
 
 public Plugin myinfo = {
-	name = "NT killstreak sounds",
-	description = "NT killstreak sounds",
+	name = "NT PUB killstreak sounds",
+	description = "NT PUB killstreak sounds",
 	author = "bauxite",
-	version = "0.1.9",
+	version = "0.3.1",
 	url = "https://github.com/bauxiteDYS/SM-NT-Killstreak-Sounds",
 };
 
@@ -51,6 +57,11 @@ public void OnPluginStart()
 }
 
 public void OnMapStart()
+{
+	LoadSounds();
+}
+
+void LoadSounds()
 {
 	char DLBuff[PLATFORM_MAX_PATH];
 	char CacheBuff[PLATFORM_MAX_PATH];
@@ -155,78 +166,112 @@ public void OnClientDisconnect_Post(int client)
 
 public void OnRoundStart(Handle event, const char[] name, bool dontBroadcast)
 {
-	int client;
-
-	for(client = 1; client <= MaxClients; client++)
+	for(int client = 1; client <= MaxClients; client++)
 	{
 		g_iKillStreak[client] = 0;
+		
+		for(int i = 0; i < 3; i++)
+		{
+			StreakPlayed[client][i] = false;
+		}
 	}
 }
 
 public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 {
 	int victim = GetClientOfUserId(GetEventInt(event, "userid"));
-	int client = GetClientOfUserId(GetEventInt(event, "attacker"));
+	int attacker = GetClientOfUserId(GetEventInt(event, "attacker"));
 
-	if(client == 0 || victim == 0)
+	if(victim == 0)
 	{
 		return;
 	}
 	
 	g_iKillStreak[victim] = 0;
 	
-	if(client == victim)
+	for(int i = 0; i < 3; i++)
+	{
+		StreakPlayed[victim][i] = false;
+	}
+	
+	if(attacker == 0)
 	{
 		return;
 	}
 	
-	if(GetClientTeam(victim) == GetClientTeam(client))
+	if(attacker == victim)
+	{
+		return;
+	}
+	
+	if(GetClientTeam(victim) == GetClientTeam(attacker))
 	{ 
 		return;
 	}
 	
-	int streak = ++g_iKillStreak[client];
+	++g_iKillStreak[attacker];
 	
-	char RandomSound[64+1];
+	int streak = g_iKillStreak[attacker];
 	
-	if(streak == 4)
+	if(streak > 3 && StreakTimer == null)
 	{
-		Format(RandomSound, 64, "%s/%s", BASE_FOLDER, g_SoundsFor[GetRandomInt(0, sizeof(g_SoundsFor)-1)]);
-			
-		for(int i = 1; i <= MaxClients; i++)
-		{
-			if(IsClientInGame(i) && wants_sound[i])
-			{
-				EmitSoundToClient(i, RandomSound);
-			}
-		}
+		StreakTimer = CreateTimer(1.0, CheckStreak, attacker, TIMER_FLAG_NO_MAPCHANGE);
 	}
-	
-	if(streak == 6)
-	{
-		Format(RandomSound, 64, "%s/%s", BASE_FOLDER, g_SoundsSix[GetRandomInt(0, sizeof(g_SoundsSix)-1)]);
-			
-		for(int i = 1; i <= MaxClients; i++)
-		{
-			if(IsClientInGame(i) && wants_sound[i])
-			{
-				EmitSoundToClient(i, RandomSound);
-			}
-		}
-	}
-	
-	if(streak == 8)
-	{
-		Format(RandomSound, 64, "%s/%s", BASE_FOLDER, g_SoundsAte[GetRandomInt(0, sizeof(g_SoundsAte)-1)]);
-			
-		for(int i = 1; i <= MaxClients; i++)
-		{
-			if(IsClientInGame(i) && wants_sound[i])
-			{
-				EmitSoundToClient(i, RandomSound);
-			}
-		}
-	}
-			
 }
 
+public Action CheckStreak(Handle timer, int attacker)
+{
+	int streak = g_iKillStreak[attacker];
+	
+	if(streak < 6 && !StreakPlayed[attacker][0])
+	{
+		Format(RandomSound, 64, "%s/%s", BASE_FOLDER, g_SoundsFor[GetRandomInt(0, sizeof(g_SoundsFor)-1)]);	
+		StreakPlayed[attacker][0] = true;
+		PlaySound();
+	}
+	
+	if(streak < 8 && !StreakPlayed[attacker][1])
+	{
+		Format(RandomSound, 64, "%s/%s", BASE_FOLDER, g_SoundsSix[GetRandomInt(0, sizeof(g_SoundsSix)-1)]);
+		StreakPlayed[attacker][1] = true;
+		PlaySound();
+	}
+	
+	if(streak >= 8 && !StreakPlayed[attacker][2])
+	{
+		Format(RandomSound, 64, "%s/%s", BASE_FOLDER, g_SoundsAte[GetRandomInt(0, sizeof(g_SoundsAte)-1)]);
+		StreakPlayed[attacker][2] = true;
+		PlaySound();
+	}
+	
+	StreakTimer = null;
+
+	return Plugin_Stop;
+}
+
+void PlaySound()
+{
+	if(SoundCooldown)
+	{
+		return;
+	}
+	
+	for(int i = 1; i <= MaxClients; i++)
+	{
+		if(IsClientInGame(i) && wants_sound[i])
+		{
+			EmitSoundToClient(i, RandomSound);
+		}
+	}
+	
+	SoundCooldown = true;
+	
+	CreateTimer(1.5, ResetSoundCooldown, _, TIMER_FLAG_NO_MAPCHANGE);
+}
+
+public Action ResetSoundCooldown(Handle timer, any data)
+{
+	SoundCooldown = false;
+	
+	return Plugin_Stop;
+}

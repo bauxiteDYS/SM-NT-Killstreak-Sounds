@@ -43,14 +43,14 @@ public Plugin myinfo = {
 	name = "NT PUB killstreak sounds",
 	description = "NT PUB killstreak sounds",
 	author = "bauxite",
-	version = "0.3.1",
+	version = "0.3.3",
 	url = "https://github.com/bauxiteDYS/SM-NT-Killstreak-Sounds",
 };
 
 public void OnPluginStart()
 {
 	SoundCookie = RegClientCookie("killstreak_sound_cookie", "killstreak sound cookie", CookieAccess_Public);
-	SetCookieMenuItem(SoundTextMenu, SoundCookie, "ace sound");
+	SetCookieMenuItem(SoundTextMenu, SoundCookie, "killstreak sounds");
 	
 	HookEvent("game_round_start", OnRoundStart, EventHookMode_Post);
 	HookEvent("player_death", OnPlayerDeath, EventHookMode_Post);

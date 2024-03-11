@@ -8,9 +8,11 @@ Handle SoundCookie;
 
 int g_iKillStreak[32+1];
 
+//float LastPlayed;
+
 static bool wants_sound[32+1];
 
-static char g_Sounds[][] = {
+static char g_SoundsSix[][] = {
 	"godlike.mp3",
 	"holyshit.mp3",
 	"ludicrouskill.mp3",
@@ -18,11 +20,24 @@ static char g_Sounds[][] = {
 	"rampage.mp3",
 };
 
+static char g_SoundsFor[][] = {
+	"dominating_f.mp3",
+	"killingspree_f.mp3",
+	"multikill_f.mp3",
+	"multikill.mp3",
+	"ultrakill.mp3",
+};
+
+static char g_SoundsAte[][] = {
+	"wickedsick_f.mp3",
+	"unstoppable_f.mp3",
+};
+
 public Plugin myinfo = {
 	name = "NT killstreak sounds",
 	description = "NT killstreak sounds",
 	author = "bauxite",
-	version = "0.1.5",
+	version = "0.1.9",
 	url = "https://github.com/bauxiteDYS/SM-NT-Killstreak-Sounds",
 };
 
@@ -40,10 +55,28 @@ public void OnMapStart()
 	char DLBuff[PLATFORM_MAX_PATH];
 	char CacheBuff[PLATFORM_MAX_PATH];
 	
-	for (int i = 0; i < sizeof(g_Sounds); i++)
+	for (int i = 0; i < sizeof(g_SoundsSix); i++)
 	{
-		Format(DLBuff, sizeof(DLBuff), "sound/%s/%s", BASE_FOLDER, g_Sounds[i]);
-		Format(CacheBuff, sizeof(CacheBuff), "%s/%s", BASE_FOLDER, g_Sounds[i]);
+		Format(DLBuff, sizeof(DLBuff), "sound/%s/%s", BASE_FOLDER, g_SoundsSix[i]);
+		Format(CacheBuff, sizeof(CacheBuff), "%s/%s", BASE_FOLDER, g_SoundsSix[i]);
+			
+		AddFileToDownloadsTable(DLBuff);
+		PrecacheSound(CacheBuff);
+	}
+	
+	for (int i = 0; i < sizeof(g_SoundsFor); i++)
+	{
+		Format(DLBuff, sizeof(DLBuff), "sound/%s/%s", BASE_FOLDER, g_SoundsFor[i]);
+		Format(CacheBuff, sizeof(CacheBuff), "%s/%s", BASE_FOLDER, g_SoundsFor[i]);
+			
+		AddFileToDownloadsTable(DLBuff);
+		PrecacheSound(CacheBuff);
+	}
+	
+	for (int i = 0; i < sizeof(g_SoundsAte); i++)
+	{
+		Format(DLBuff, sizeof(DLBuff), "sound/%s/%s", BASE_FOLDER, g_SoundsAte[i]);
+		Format(CacheBuff, sizeof(CacheBuff), "%s/%s", BASE_FOLDER, g_SoundsAte[i]);
 			
 		AddFileToDownloadsTable(DLBuff);
 		PrecacheSound(CacheBuff);
@@ -135,26 +168,65 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 	int victim = GetClientOfUserId(GetEventInt(event, "userid"));
 	int client = GetClientOfUserId(GetEventInt(event, "attacker"));
 
-	if(client != 0 && victim != 0)
+	if(client == 0 || victim == 0)
 	{
-		if(client != victim && GetClientTeam(victim) != GetClientTeam(client))
-		{ 
-			int streak = ++g_iKillStreak[client];
-		
-			if(streak == 5)
-			{
-				char RandomSound[64+1];
-		
-				Format(RandomSound, 64, "%s/%s", BASE_FOLDER, g_Sounds[GetRandomInt(0, sizeof(g_Sounds)-1)]);
+		return;
+	}
+	
+	g_iKillStreak[victim] = 0;
+	
+	if(client == victim)
+	{
+		return;
+	}
+	
+	if(GetClientTeam(victim) == GetClientTeam(client))
+	{ 
+		return;
+	}
+	
+	int streak = ++g_iKillStreak[client];
+	
+	char RandomSound[64+1];
+	
+	if(streak == 4)
+	{
+		Format(RandomSound, 64, "%s/%s", BASE_FOLDER, g_SoundsFor[GetRandomInt(0, sizeof(g_SoundsFor)-1)]);
 			
-				for(int i = 1; i <= MaxClients; i++)
-				{
-					if(IsClientInGame(i) && wants_sound[i])
-					{
-						EmitSoundToClient(i, RandomSound);
-					}
-				}
+		for(int i = 1; i <= MaxClients; i++)
+		{
+			if(IsClientInGame(i) && wants_sound[i])
+			{
+				EmitSoundToClient(i, RandomSound);
 			}
 		}
 	}
+	
+	if(streak == 6)
+	{
+		Format(RandomSound, 64, "%s/%s", BASE_FOLDER, g_SoundsSix[GetRandomInt(0, sizeof(g_SoundsSix)-1)]);
+			
+		for(int i = 1; i <= MaxClients; i++)
+		{
+			if(IsClientInGame(i) && wants_sound[i])
+			{
+				EmitSoundToClient(i, RandomSound);
+			}
+		}
+	}
+	
+	if(streak == 8)
+	{
+		Format(RandomSound, 64, "%s/%s", BASE_FOLDER, g_SoundsAte[GetRandomInt(0, sizeof(g_SoundsAte)-1)]);
+			
+		for(int i = 1; i <= MaxClients; i++)
+		{
+			if(IsClientInGame(i) && wants_sound[i])
+			{
+				EmitSoundToClient(i, RandomSound);
+			}
+		}
+	}
+			
 }
+

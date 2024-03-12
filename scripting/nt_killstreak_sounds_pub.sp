@@ -49,7 +49,7 @@ public Plugin myinfo = {
 
 public void OnPluginStart()
 {
-	SoundCookie = RegClientCookie("killstreak_sound_cookie", "killstreak sound cookie", CookieAccess_Public);
+	SoundCookie = RegClientCookie("killstreak_sound_pub_cookie", "killstreak sound pub cookie", CookieAccess_Public);
 	SetCookieMenuItem(SoundTextMenu, SoundCookie, "killstreak sounds");
 	
 	HookEvent("game_round_start", OnRoundStart, EventHookMode_Post);

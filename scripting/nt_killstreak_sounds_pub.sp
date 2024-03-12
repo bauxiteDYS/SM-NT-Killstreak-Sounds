@@ -215,7 +215,7 @@ public void OnPlayerDeath(Handle event, const char[] name, bool dontBroadcast)
 	
 	if(streak > 3 && StreakTimer == null)
 	{
-		StreakTimer = CreateTimer(1.0, CheckStreak, attacker, TIMER_FLAG_NO_MAPCHANGE);
+		StreakTimer = CreateTimer(0.70, CheckStreak, attacker, TIMER_FLAG_NO_MAPCHANGE);
 	}
 }
 
@@ -230,7 +230,7 @@ public Action CheckStreak(Handle timer, int attacker)
 		PlaySound();
 	}
 	
-	if(streak < 8 && !StreakPlayed[attacker][1])
+	if(streak > 5 && streak < 8 && !StreakPlayed[attacker][1])
 	{
 		Format(RandomSound, 64, "%s/%s", BASE_FOLDER, g_SoundsSix[GetRandomInt(0, sizeof(g_SoundsSix)-1)]);
 		StreakPlayed[attacker][1] = true;
@@ -266,7 +266,7 @@ void PlaySound()
 	
 	SoundCooldown = true;
 	
-	CreateTimer(1.5, ResetSoundCooldown, _, TIMER_FLAG_NO_MAPCHANGE);
+	CreateTimer(1.0, ResetSoundCooldown, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
 public Action ResetSoundCooldown(Handle timer, any data)
